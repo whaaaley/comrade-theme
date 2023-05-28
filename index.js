@@ -63,29 +63,35 @@ export const getColorLocations = (input, placeholder = '') => {
   return result
 }
 
-const mergeThemes = async (themePath1, themePath2) => {
-  const theme1 = await loadJsonFile(themePath1)
-  const theme2 = await loadJsonFile(themePath2)
+export const mergeThemes = (theme1, theme2) => {
+  const mergedTheme = {}
 
-  const colorLocations1 = getColorLocations(nestedObject(theme1.colors))
-  const colorLocations2 = getColorLocations(nestedObject(theme2.colors))
+  // Merge keys from theme1
+  for (const key in theme1) {
+    const colorMap1 = theme1[key]
+    const colorMap2 = theme2[key] || {}
+    const mergedColorMap = {}
 
-  const newColors = {
-    ...theme1.colors
+    // Merge color maps from theme1 and theme2
+    for (const color in colorMap1) {
+      const selectors1 = colorMap1[color]
+      const selectors2 = colorMap2[color] || []
+      const mergedSelectors = [...new Set([...selectors1, ...selectors2])]
+
+      // Merge selectors for the same color
+      mergedColorMap[color] = mergedSelectors
+    }
+
+    // Add merged color map to merged theme
+    mergedTheme[key] = mergedColorMap
   }
 
-  for (const [color, locations] of Object.entries(colorLocations2)) {
-    for (const location of locations) {
-      if (newColors[location]) {
-        newColors[location] = averageColor(newColors[location], color)
-      } else {
-        newColors[location] = color
-      }
+  // Merge keys from theme2 that are not in theme1
+  for (const key in theme2) {
+    if (!theme1.hasOwnProperty(key)) {
+      mergedTheme[key] = theme2[key]
     }
   }
 
-  return {
-    ...theme1,
-    colors: newColors
-  }
+  return mergedTheme
 }
