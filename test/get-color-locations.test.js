@@ -1,41 +1,15 @@
 
-import { assertEquals } from 'asserts'
+import { assertEquals, assertThrows } from 'asserts'
 import * as comrade from '../index.js'
 
-Deno.test('getColorLocations should throw an error if the input is not an object', () => {
-  const testFunction = () => {
-    comrade.getColorLocations('not an object')
-  }
-  assertThrows(testFunction, TypeError, 'Input should be an object')
-})
-
-Deno.test('getColorLocations should return empty object when input is empty', () => {
+Deno.test('getColorLocations should return an empty object for an empty input object', () => {
   const input = {}
   const expected = {}
   const actual = comrade.getColorLocations(input)
   assertEquals(actual, expected)
 })
 
-Deno.test('getColorLocations should handle different color formats', () => {
-  const input = {
-    a: {
-      b: '#FFF',
-      c: '#FFFFFF',
-      d: 'rgb(255, 255, 255)'
-    }
-  }
-  const expected = {
-    a: {
-      '#FFF': ['a.b'],
-      '#FFFFFF': ['a.c'],
-      'rgb(255, 255, 255)': ['a.d']
-    }
-  }
-  const actual = comrade.getColorLocations(input)
-  assertEquals(actual, expected)
-})
-
-Deno.test('getColorLocations should ignore invalid color values', () => {
+Deno.test('getColorLocations should return an empty object when no valid color values are found', () => {
   const input = {
     a: {
       b: '#ZZZ',
@@ -47,41 +21,16 @@ Deno.test('getColorLocations should ignore invalid color values', () => {
   assertEquals(actual, expected)
 })
 
-Deno.test('getColorLocations should ignore color values that are not in the expected location', () => {
+Deno.test('getColorLocations should return an empty object when input contains color values in an array', () => {
   const input = {
-    a: [
-      '#FFF'
-    ]
+    a: ['#FFF']
   }
   const expected = {}
   const actual = comrade.getColorLocations(input)
   assertEquals(actual, expected)
 })
 
-Deno.test('getColorLocations should handle duplicate color values within the same object or nested objects', () => {
-  const input = {
-    a: {
-      b: '#FFF',
-      c: '#FFF'
-    },
-    d: {
-      e: '#FFF'
-    }
-  }
-  const expected = {
-    a: {
-      '#FFF': ['b', 'c']
-    },
-    d: {
-      '#FFF': ['e']
-    }
-  }
-  const actual = comrade.getColorLocations(input)
-  assertEquals(actual, expected)
-})
-
-
-Deno.test('getColorLocations should return empty object when no colors are present', () => {
+Deno.test('getColorLocations should return an empty object when no valid color values are found in nested structure', () => {
   const input = {
     a: {
       b: 'foo',
@@ -98,62 +47,109 @@ Deno.test('getColorLocations should return empty object when no colors are prese
   assertEquals(actual, expected)
 })
 
-Deno.test('getColorLocations should map colors and their locations at the top level', () => {
+Deno.test('getColorLocations should correctly identify color locations with multiple color values', () => {
   const input = {
     a: {
-      b: '#A348A4',
-      c: '#A348A4',
-      d: '#4B6120'
+      b: '#456DEF',
+      c: '#456DEF',
+      d: '#123ABC'
     }
   }
   const expected = {
     a: {
-      '#A348A4': ['a.b', 'a.c'],
-      '#4B6120': ['a.d']
+      '#456DEF': ['a.b', 'a.c'],
+      '#123ABC': ['a.d']
     }
   }
   const actual = comrade.getColorLocations(input)
   assertEquals(actual, expected)
 })
 
-Deno.test('getColorLocations should map colors and their locations nested within objects', () => {
+Deno.test('getColorLocations should correctly identify multiple color locations', () => {
   const input = {
     a: {
-      b: '#E0329A',
+      b: '#123ABC',
+      c: '#123ABC'
+    },
+    d: {
+      e: '#123ABC'
+    }
+  }
+  const expected = {
+    a: {
+      '#123ABC': ['a.b', 'a.c']
+    },
+    d: {
+      '#123ABC': ['d.e']
+    }
+  }
+  const actual = comrade.getColorLocations(input)
+  assertEquals(actual, expected)
+})
+
+Deno.test('getColorLocations should correctly identify color locations in the input object', () => {
+  const input = {
+    a: {
+      b: '#123ABC',
+      c: '#456DEF',
+      d: 'rgb(100, 200, 150)'
+    }
+  }
+  const expected = {
+    a: {
+      '#123ABC': ['a.b'],
+      '#456DEF': ['a.c'],
+      'rgb(100, 200, 150)': ['a.d']
+    }
+  }
+  const actual = comrade.getColorLocations(input)
+  assertEquals(actual, expected)
+})
+
+Deno.test('getColorLocations should correctly identify color locations in deeply nested structure', () => {
+  const input = {
+    a: {
+      b: '#123ABC',
       c: {
-        d: '#4D2C3D',
-        e: '#E0329A'
+        d: '#456DEF',
+        e: '#123ABC'
       }
     },
     f: {
-      g: '#317F3D',
+      g: '#789XYZ',
       h: {
-        i: '#AA763F',
-        j: '#DF83C4'
+        i: '#XYZ789',
+        j: '#987PQR'
       }
     }
   }
   const expected = {
     a: {
-      '#E0329A': ['a.b', 'a.c.e'],
-      '#4D2C3D': ['a.c.d']
+      '#123ABC': ['a.b', 'a.c.e'],
+      '#456DEF': ['a.c.d']
     },
     f: {
-      '#317F3D': ['f.g'],
-      '#AA763F': ['f.h.i'],
-      '#DF83C4': ['f.h.j']
+      '#789XYZ': ['f.g'],
+      '#XYZ789': ['f.h.i'],
+      '#987PQR': ['f.h.j']
     }
   }
   const actual = comrade.getColorLocations(input)
   assertEquals(actual, expected)
 })
 
-Deno.test('getColorLocations should handle circular references', () => {
+Deno.test('getColorLocations should replace circular references with a placeholder', () => {
   const input = {}
   input.a = input
-
-  const expected = {}
-  const actual = comrade.getColorLocations(input)
-
+  const placeholder = '[Circular Reference]'
+  const expected = {
+    a: placeholder
+  }
+  const actual = comrade.getColorLocations(input, placeholder)
   assertEquals(actual, expected)
+})
+
+Deno.test('getColorLocations should throw an error when input is not an object', () => {
+  const testFunction = () => comrade.getColorLocations('not an object')
+  assertThrows(testFunction, Error, 'Input should be an object')
 })
