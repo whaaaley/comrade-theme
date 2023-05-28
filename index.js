@@ -22,30 +22,70 @@ export const nestedObject = obj => {
   return result
 }
 
-export const getColorLocations = (nestedObj, path = '') => {
-  const colorLocations = {}
+export const getColorLocations = (input, placeholder = '') => {
+  if (typeof input !== 'object' || input === null) {
+    throw new Error('Input should be an object')
+  }
 
-  for (const key in nestedObj) {
-    const newPath = path ? `${path}.${key}` : key
+  const result = {}
+  const visited = new Set()
 
-    if (typeof nestedObj[key] === 'object' && nestedObj[key] !== null) {
-      const nestedColors = getColorLocations(nestedObj[key], newPath)
+  const traverse = (input, prefix = '') => {
+    if (visited.has(input)) {
+      return placeholder
+    }
 
-      for (const color in nestedColors) {
-        if (!colorLocations[color]) {
-          colorLocations[color] = []
+    visited.add(input)
+
+    for (let [key, value] of Object.entries(input)) {
+      let newPrefix = prefix ? `${prefix}.${key}` : key
+
+      if (!Array.isArray(value)) {
+        if (typeof value === 'object') { // Ignore arrays
+          const obj = traverse(value, newPrefix)
+
+          if (obj === placeholder) {
+            result[newPrefix] = result[newPrefix] || placeholder
+          }
+        } else if (colord(value).isValid()) { // Check if value is a valid color
+          let baseKey = newPrefix.split('.')[0]
+
+          result[baseKey] = result[baseKey] || {}
+          result[baseKey][value] = result[baseKey][value] || []
+          result[baseKey][value].push(newPrefix)
         }
-
-        colorLocations[color].push(...nestedColors[color])
       }
-    } else if (colord(nestedObj[key]).isValid()) {
-      if (!colorLocations[nestedObj[key]]) {
-        colorLocations[nestedObj[key]] = []
-      }
-
-      colorLocations[nestedObj[key]].push(newPath)
     }
   }
 
-  return colorLocations
+  traverse(input)
+
+  return result
+}
+
+const mergeThemes = async (themePath1, themePath2) => {
+  const theme1 = await loadJsonFile(themePath1)
+  const theme2 = await loadJsonFile(themePath2)
+
+  const colorLocations1 = getColorLocations(nestedObject(theme1.colors))
+  const colorLocations2 = getColorLocations(nestedObject(theme2.colors))
+
+  const newColors = {
+    ...theme1.colors
+  }
+
+  for (const [color, locations] of Object.entries(colorLocations2)) {
+    for (const location of locations) {
+      if (newColors[location]) {
+        newColors[location] = averageColor(newColors[location], color)
+      } else {
+        newColors[location] = color
+      }
+    }
+  }
+
+  return {
+    ...theme1,
+    colors: newColors
+  }
 }
