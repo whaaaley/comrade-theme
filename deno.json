@@ -1,5 +1,7 @@
 {
   "imports": {
-    "asserts": "https://deno.land/std@0.189.0/testing/asserts.ts"
+    "asserts": "https://deno.land/std@0.189.0/testing/asserts.ts",
+    "colord": "https://esm.sh/colord@2.9.3",
+    "lodash": "https://esm.sh/lodash-es@4.17.21"
   }
 }
