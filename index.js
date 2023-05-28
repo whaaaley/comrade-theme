@@ -1,6 +1,12 @@
 
 import JSON5 from 'https://esm.sh/json5@2.2.3'
 import { colord } from 'https://esm.sh/colord@2.9.3'
+import JSON5 from 'json5'
+import { colord, extend } from 'colord'
+import mixPlugin from 'colord/plugins/mix'
+import labPlugin from 'colord/plugins/lab'
+
+extend([labPlugin, mixPlugin])
 
 export const loadTheme = async path => JSON5.parse(await Deno.readTextFile(path))
 
@@ -59,6 +65,20 @@ export const getColorLocations = (input, placeholder = '') => {
   }
 
   traverse(input)
+
+  return result
+}
+
+export const nearestColor = (input, arr) => {
+  let result = { color: '', delta: Infinity }
+
+  for (const color of arr) {
+    const delta = colord(input).delta(color)
+
+    if (delta < result.delta) {
+      result = { color, delta }
+    }
+  }
 
   return result
 }
