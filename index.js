@@ -1,6 +1,4 @@
 
-import JSON5 from 'https://esm.sh/json5@2.2.3'
-import { colord } from 'https://esm.sh/colord@2.9.3'
 import JSON5 from 'json5'
 import { colord, extend } from 'colord'
 import mixPlugin from 'colord/plugins/mix'
