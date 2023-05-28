@@ -22,6 +22,15 @@ Deno.test('getColorLocations should return an empty object when no valid color v
   assert(isEqual(actual, expected))
 })
 
+Deno.test('getColorLocations should return an empty object when input contains color values in an array', () => {
+  const input = {
+    a: ['#FFF']
+  }
+  const expected = {}
+  const actual = getColorLocations(input)
+  assert(isEqual(actual, expected))
+})
+
 Deno.test('getColorLocations should return an object when valid color values are found', () => {
   const input = {
     a: {
@@ -34,15 +43,6 @@ Deno.test('getColorLocations should return an object when valid color values are
       'rgb(255, 0, 0)': ['a.c']
     }
   }
-  const actual = getColorLocations(input)
-  assert(isEqual(actual, expected))
-})
-
-Deno.test('getColorLocations should return an empty object when input contains color values in an array', () => {
-  const input = {
-    a: ['#FFF']
-  }
-  const expected = {}
   const actual = getColorLocations(input)
   assert(isEqual(actual, expected))
 })
@@ -159,9 +159,7 @@ Deno.test('getColorLocations should replace circular references with a placehold
   const input = {}
   input.a = input
   const placeholder = '[Circular Reference]'
-  const expected = {
-    a: placeholder
-  }
+  const expected = { a: placeholder }
   const actual = getColorLocations(input, placeholder)
   assert(isEqual(actual, expected))
 })
