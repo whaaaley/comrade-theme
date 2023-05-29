@@ -1,4 +1,5 @@
-import { assertEquals } from 'https://deno.land/std/testing/asserts.ts'
+
+import { assertEquals } from 'asserts'
 import { mergeThemes } from '../index.js'
 
 Deno.test('mergeThemes should return a merged theme when two non-empty themes are provided', () => {

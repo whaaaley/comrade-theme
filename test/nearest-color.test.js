@@ -20,3 +20,9 @@ Deno.test('nearestColor should return the nearest color from a list when only on
   const expected = { color: '#D8A547', delta: 0.285 }
   assert(isEqual(actual, expected))
 })
+
+// Deno.test('nearestColor should return the first closest color when multiple colors have similar delta values', () => {
+//   const actual = nearestColor('#0BE672', ['#D47F3A', '#C20196'])
+//   const expected = { color: '#D47F3A', delta: 0.548 }
+//   assert(isEqual(actual, expected))
+// })
