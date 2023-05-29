@@ -99,19 +99,45 @@ export const mergeSubThemes = (primary, secondary) => {
   return result
 }
 
+export const compileLocations = ast => {
+  // todo
+}
+
 export const mergeThemes = (primary, secondary) => {
+  primary = getColorLocations(primary.colors)
+  secondary = getColorLocations(secondary.colors)
+
+  console.log(primary);
+  console.log();
+  console.log();
+  console.log();
+  console.log(secondary);
+
   const result = {}
 
-  for (const [key, value] of Object.entries(primary)) {
-    const primarySubTheme = primary[key]
-    const secondarySubTheme = secondary[key]
+  for (const key in primary) {
+    console.log('key >>', key)
+    // These should be parallel, if they're not, you exported the themes wrong
+    const primaryObj = primary[key]
+    const secondaryObj = secondary[key]
 
-    if (primary.hasOwnProperty(key)) {
-      primary[key] = mergeSubThemes(primary[key], value)
-    } else {
-      primary[key] = value
+    //
+    const secondaryColors = Object.keys(secondaryObj)
+
+    // If the key doesn't exist in the result, create it
+    if (result[key] == null) {
+      result[key] = {}
+    }
+
+    for (const color in primaryObj) {
+      const nearest = nearestColor(color, secondaryColors)
+      const average = colord(nearest).mix(color).toHex().toUpperCase()
+
+      result[key][average] = primaryObj[color]
     }
   }
+
+  console.log('result >>', result)
 
   return primary
 }
@@ -121,7 +147,7 @@ export const mergeThemes = (primary, secondary) => {
 // + Atom One Dark
 // + Material Community
 // + Solarized Dark
-export const director = async () => {
+export const start = async () => {
   const githubPromise = loadTheme('./themes/github-dimmed.json')
   const oneDarkPromise = loadTheme('./themes/one-dark-pro.json')
   const materialPromise = loadTheme('./themes/community-material-theme-high-contrast.json')
@@ -137,10 +163,12 @@ export const director = async () => {
     mergeThemes(material, solarized)
   )
 
-  console.log(JSON.stringify(result, null, 2))
+  // console.log(JSON.stringify(result, null, 2))
 
   return result
 }
+
+start()
 
 // const isEqual = (set1, set2) => {
 //   if (set1.size !== set2.size) {
@@ -217,12 +245,10 @@ export const director = async () => {
 //   return mergedSubTheme
 // }
 
-export const mergeThemes = (theme1, theme2) => {
-  const mergedTheme = {}
-
-  for (const key of new Set([...Object.keys(theme1), ...Object.keys(theme2)])) {
-    mergedTheme[key] = mergeSubThemes(theme1[key] || {}, theme2[key] || {})
-  }
-
-  return mergedTheme
-}
+// export const mergeThemes = (theme1, theme2) => {
+//   const mergedTheme = {}
+//   for (const key of new Set([...Object.keys(theme1), ...Object.keys(theme2)])) {
+//     mergedTheme[key] = mergeSubThemes(theme1[key] || {}, theme2[key] || {})
+//   }
+//   return mergedTheme
+// }

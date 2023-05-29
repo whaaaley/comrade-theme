@@ -2,12 +2,12 @@
 import { colord, extend } from "colord"
 import mixPlugin from 'colord/plugins/mix'
 import labPlugin from 'colord/plugins/lab'
-import { nearestColor } from './index.js'
+// import { nearestColor } from './index.js'
 
 extend([labPlugin, mixPlugin])
 
 console.log(
-  colord("#FFFFFF").mix("#D3D3D3").toHex()
+  colord("#181c22").mix("#192227").toHex()
 );
 
 // console.log(colord('#0BE672').delta('#C20196'));  // Outputs: 0.96
