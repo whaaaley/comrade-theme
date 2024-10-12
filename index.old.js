@@ -114,12 +114,16 @@ export const mergeThemes = (primary, secondary) => {
   console.log(secondary);
 
   const result = {}
+  const missing = {}
 
   for (const key in primary) {
-    console.log('key >>', key)
-    // These should be parallel, if they're not, you exported the themes wrong
     const primaryObj = primary[key]
     const secondaryObj = secondary[key]
+
+    if (secondaryObj == null) {
+      missing[key] = primaryObj
+      continue
+    }
 
     //
     const secondaryColors = Object.keys(secondaryObj)
@@ -136,6 +140,8 @@ export const mergeThemes = (primary, secondary) => {
       result[key][average] = primaryObj[color]
     }
   }
+
+  for
 
   console.log('result >>', result)
 
